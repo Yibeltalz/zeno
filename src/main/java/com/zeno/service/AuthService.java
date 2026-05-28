@@ -60,6 +60,8 @@ public class AuthService {
     public Map<String, Object> login(AuthRequest.Login request) {
         log.info("Login attempt: {}", request.getEmail());
 
+        // Authenticate using email — Spring will call loadUserByUsername with email,
+        // which falls back to email lookup
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
@@ -67,6 +69,7 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ZenoException.NotFound("User not found"));
 
+        // Generate token using UUID as subject
         String token = jwtService.generateToken(user.getId().toString());
 
         Map<String, Object> result = new HashMap<>();
